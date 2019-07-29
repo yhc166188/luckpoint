@@ -3,7 +3,14 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 #include "luckpoint.hpp"
-
+struct RandRecord {
+    uint64_t blockNum = 0; // The block number
+    uint64_t val = 0; // The random value
+    int32_t  code = 0; // The random record status, the calculate way refer method calcCode
+    auto primary_key() const { return blockNum; }
+    ULTRAINLIB_SERIALIZE(RandRecord, (blockNum)(val)(code))
+};
+typedef ultrainio::multi_index< N(rand), RandRecord > randrecordtab;
 void luckpoint::creategame(const account_name _owner) {
   // 创建一个全局引用计数器
   auto global_itr = globals.begin();
@@ -52,7 +59,7 @@ void luckpoint::sayhi(account_name receiver) {
 }
 
 void luckpoint::printrand(uint64_t gameid) {
-  ultrainio::print("printrand::%d", _getrandnum(gameid));
+  ultrainio::print("printrand::", _getrandnum(gameid));
 }
 
 void luckpoint::_checkgame(uint64_t _gameid) {
@@ -69,9 +76,19 @@ void luckpoint::_checkgame(uint64_t _gameid) {
 uint32_t luckpoint::_getrandnum(uint64_t _gameid) {
   auto game_itr = games.find(_gameid);
   ultrainio_assert(game_itr != games.end(), "game id not found in games");
+  randrecordtab  randtab(N(utrio.rand), N(rand));
+  uint64_t block_height = head_block_number();
+  auto rand_itr = randtab.find(block_height);
+  uint64_t rand_value = 0;
+  if(rand_itr != randtab.end()){
+    rand_value = rand_itr->val;
+  } else{
+    rand_value = game_itr->createtime + _gameid;
+  }
+  ultrainio::print("_getrandnum randvalue:", rand_value);
 
   // 随机数=游戏创建时间，取余2，再+1，保证是1、2中的任意一个
-  return (((uint32_t)(game_itr->createtime + _gameid))%2) + 1;
+  return (((uint32_t)(rand_value))%2) + 1;
 }
 
 ULTRAINIO_ABI( luckpoint, (creategame)(opencard)(sayhi)(printrand))
