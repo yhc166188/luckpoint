@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import EOSJS from 'eosjs'
 import {createU3} from 'u3.js'
 
 let contract_name = 'luckpoint1'
@@ -23,14 +22,6 @@ u3.getChainInfo((err, info) => {
   if (err) {throw err;}
   console.log(info);
 });
-// const EOSJS_CONFIG = {
-//   contractName: contract_name,    // 合约名字
-//   contractSender: account_name,   // 执行合约的账户 (需要与私钥对应)
-//   clientConfig: {
-//     keyProvider: ['5Hv3wfancr3oN3bHPUVe354GWEQ7SCx8WUH4dotJs9pQwdc2yPU'], // 账号对应的私钥
-//     httpEndpoint: 'http://172.16.10.9:8899' // EOS节点程序的http终端
-//   }
-// }
 
 class LuckPoint extends React.Component {
   constructor(props) {
@@ -52,21 +43,6 @@ class LuckPoint extends React.Component {
 
   async componentDidMount() {
     this._initGameData()
-
-    // let config = {
-    //   httpEndpoint:"http://pioneer.natapp1.cc",
-    //   httpEndpointHistory:"http://pioneer-history.natapp1.cc",
-    //   chainId:"20c35b993c10b5ea1007014857bb2b8832fb8ae22e9dcfdc61dacf336af4450f",
-
-    //   broadcast: true,
-    //   sign: true,
-    //   logger: undefined,
-    //   symbol: "UGAS",
-    //   keyProvider:['5Hv3wfancr3oN3bHPUVe354GWEQ7SCx8WUH4dotJs9pQwdc2yPU'],
-    // }
-    // let u3 = createU3(config);
-    // let info = await u3.getChainInfo()
-    // console.log(info)
   }
 
   _initGameData() {
@@ -84,14 +60,9 @@ class LuckPoint extends React.Component {
     this.gameprops.gameDataList = []
 
     // 读取游戏数据
-    // let eosjs = EOSJS.Localnet(EOSJS_CONFIG.clientConfig)
-    // eosjs.contract(contract_name)
-    //let eosjs = EOSJS.Localnet(EOSJS_CONFIG.clientConfig)
     u3.contract(contract_name)
       .then((contract) => {
         console.log('_updateGameData::' + contract_name + '合约加载成功！')
-
-        //eosjs.getTableRows({"scope":contract_name, "code":contract_name, "table":"game", "json": true})
         u3.getTableRecords({"scope":contract_name, "code":contract_name, "table":"game", "json": true,  "limit":1000})
           .then(result => {
             console.log('_updateGameData::读取游戏列表成功！')
@@ -105,13 +76,6 @@ class LuckPoint extends React.Component {
               var player2 = result.rows[i].player2
               var createtime = result.rows[i].createtime
               var owner = result.rows[i].owner
-
-            	// console.log('_updateGameData::rows[' + i + '].id:' + id)
-            	// console.log('_updateGameData::rows[' + i + '].winner:' + winner)
-            	// console.log('_updateGameData::rows[' + i + '].player1:' + player1)
-              // console.log('_updateGameData::rows[' + i + '].player2:' + player2)
-              // console.log('_updateGameData::rows[' + i + '].createtime:' + createtime)
-              // console.log('_updateGameData::rows[' + i + '].owner:' + owner)
 
               this.gameprops.gameDataList.push({
                 id: id,
@@ -145,8 +109,6 @@ class LuckPoint extends React.Component {
     this._showLoading(true, '正在创建游戏... ...')
 
     let _sender = account_name
-    // let eosjs = EOSJS.Localnet(EOSJS_CONFIG.clientConfig)
-    // eosjs.contract(EOSJS_CONFIG.contractName)
     u3.contract(contract_name)
       .then((contract) => {
         console.log('_createGame::加载合约成功！')
@@ -168,7 +130,6 @@ class LuckPoint extends React.Component {
     this._showLoading(true, '玩家' + play_id + '正在开牌 ...')
 
     let _sender = account_name
-    // let eosjs = EOSJS.Localnet(EOSJS_CONFIG.clientConfig)
     u3.contract(contract_name)
       .then((contract) => {
         console.log('_playerOpenCard::加载合约成功！')
